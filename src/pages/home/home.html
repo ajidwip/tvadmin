@@ -1,27 +1,321 @@
 <ion-content style="background: #ffffff;">
-  <ion-list>
+  <!--<ion-list>
     <ion-item text-wrap *ngFor="let channel of channels">
       <h2 style="font-weight: bold;">{{channel.title}} ({{channel.status}})</h2>
       <p>{{channel.url}}</p>
     </ion-item>
-  </ion-list>
+  </ion-list>-->
+  <ion-grid>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Playlist Item</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetPlaylistItems()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">List Channel</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetListChannel()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Truck</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetTruck()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Link Anime 2</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetLinkAnime2()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Link Anime</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetLinkAnime()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Data Asian Games</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetDataAsianGames2018()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Data Train</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doProcess()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Insert Data Train</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doInsertDataTrain()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Insert Data Tarif Train</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doInsertDataTarif()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Channel</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetChannel()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGet()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Url</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetUrl()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Open Channel</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doOpenChannel()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Close Channel</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doClsdChannel()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Thumbnail Picture</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetThumbnailPicture()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Thumbnail Picture Imdb</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetThumbnailPictureImdb()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Thumbnail Picture Omdb</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetThumbnailPictureOmdb()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Thumbnail Picture Tmdb</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetThumbnailPictureTmdb()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Genres</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetAPIGenres()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Google Drive</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetDrive()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Data Url Stream</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetJson()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Url Error DOCTYPE</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetUrlErrorDOCTYPE()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get URL Video Null</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetUrlVideoError()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Url Embed 720</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetUrl720()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Url Google</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetUrlGoogle()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get URL Google 720</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetUrlGoogle720()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get URL Update Google</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetUrlUpdateGoogle()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get URL Update Google 720</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetUrlUpdateGoogle720()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
 <ion-fab bottom right>
   <button ion-fab>
     <ion-icon name="md-apps"></ion-icon>
   </button>
   <ion-fab-list side="top">
+    <button ion-fab color="primary" (click)="doGetPlaylistItems()">
+      <ion-icon name="md-alarm"></ion-icon>
+    </button>
+    <button ion-fab color="secondary" (click)="doGetListChannel()">
+      <ion-icon name="md-alarm"></ion-icon>
+    </button>
+    <button ion-fab color="secondary" (click)="doGetTruck()">
+      <ion-icon name="md-car"></ion-icon>
+    </button>
+    <button ion-fab color="primary" (click)="doGetLinkAnime2()">
+      <ion-icon name="md-albums"></ion-icon>
+    </button>
+    <button ion-fab color="secondary" (click)="doGetLinkAnime()">
+      <ion-icon name="md-albums"></ion-icon>
+    </button>
+    <button ion-fab color="secondary" (click)="doGetDataAsianGames2018()">
+      <ion-icon name="md-play"></ion-icon>
+    </button>
+    <button ion-fab color="secondary" (click)="doProcess()">
+      <ion-icon name="ios-train"></ion-icon>
+    </button>
+    <button ion-fab color="secondary" (click)="doInsertDataTrain()">
+      <ion-icon name="md-train"></ion-icon>
+    </button>
+    <button ion-fab color="secondary" (click)="doInsertDataTarif()">
+      <ion-icon name="md-pricetags"></ion-icon>
+    </button>
     <button ion-fab color="secondary" (click)="doGetChannel()">
       <ion-icon name="md-sync"></ion-icon>
     </button>
     <button ion-fab color="secondary" (click)="doGet()">
       <ion-icon name="md-send"></ion-icon>
     </button>
+    <button ion-fab color="secondary" (click)="doGetUrl()">
+      <ion-icon name="ios-send"></ion-icon>
+    </button>
     <button ion-fab color="primary" (click)="doOpenChannel()">
       <ion-icon name="md-open"></ion-icon>
     </button>
     <button ion-fab color="danger" (click)="doClsdChannel()">
       <ion-icon name="md-close"></ion-icon>
+    </button>
+  </ion-fab-list>
+  <ion-fab-list side="left">
+    <button ion-fab color="danger" (click)="doGetThumbnailPicture()">
+      <ion-icon name="md-images"></ion-icon>
+    </button>
+    <button ion-fab color="primary" (click)="doGetThumbnailPictureImdb()">
+      <ion-icon name="md-images"></ion-icon>
+    </button>
+    <button ion-fab color="secondary" (click)="doGetThumbnailPictureOmdb()">
+      <ion-icon name="md-images"></ion-icon>
+    </button>
+    <button ion-fab color="light" (click)="doGetThumbnailPictureTmdb()">
+      <ion-icon name="md-images"></ion-icon>
+    </button>
+    <button ion-fab color="primary" (click)="doGetAPIGenres()">
+      <ion-icon name="md-analytics"></ion-icon>
+    </button>
+    <button ion-fab color="primary" (click)="doGetDrive()">
+      <ion-icon name="logo-google"></ion-icon>
+    </button>
+    <button ion-fab color="secondary" (click)="doGetJson()">
+      <ion-icon name="md-filing"></ion-icon>
+    </button>
+    <button ion-fab color="secondary" (click)="doGetUrlErrorDOCTYPE()">
+      <ion-icon name="md-open"></ion-icon>
+    </button>
+    <button ion-fab color="secondary" (click)="doGetUrlVideoError()">
+      <ion-icon name="md-film"></ion-icon>
+    </button>
+    <button ion-fab color="primary" (click)="doGetUrl720()">
+      <ion-icon name="md-film"></ion-icon>
+    </button>
+    <button ion-fab color="dark" (click)="doGetUrlGoogle()">
+      <ion-icon name="md-film"></ion-icon>
+    </button>
+    <button ion-fab color="light" (click)="doGetUrlGoogle720()">
+      <ion-icon name="md-film"></ion-icon>
     </button>
   </ion-fab-list>
 </ion-fab>
