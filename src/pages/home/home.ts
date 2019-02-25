@@ -22,6 +22,7 @@ export class HomePage {
   public channellistplaylist = [];
   public channellistplaylistitems = [];
   public datalist = [];
+  public ip: any;
 
   constructor(
     public toastCtrl: ToastController,
@@ -31,22 +32,42 @@ export class HomePage {
     public platform: Platform,
     public alertCtrl: AlertController,
     private storage: Storage) {
+    this.doGetLocation()
+    setInterval(() => {
+      this.doGetUrlUseeTV()
+    }, 1800000);
     /*setInterval(() => {
       this.doGet();
     }, 600000);*/
     /*setInterval(() => {
       this.doGetTruck();
     }, 10000);*/
-    /*setInterval(() => {
-      this.doGetChannelTemp();
-    }, 180000);*/
+    setInterval(() => {
+      this.doGetChannelTemp()
+    }, 180000);
     /*setInterval(() => {
       this.doGetUrl();
     }, 90000);
     setInterval(() => {
       this.doGetDataAsianGames2018();
     }, 300000);*/
-    this.doGetChannel();
+    /*this.doGetChannel();*/
+  }
+  doGetLocation() {
+    var self = this;
+    this.readTextFileJSON('http://ip-api.com/json', function (text) {
+      var data = JSON.parse(text);
+      self.api.get("table/z_ip_access", { params: { limit: 1000, filter: "ip=" + "'" + data.query + "' AND status = 'OPEN'" } })
+        .subscribe(val => {
+          let data = val['data']
+          if (data.length != 0) {
+            self.ip = 'OK'
+          }
+          else {
+            self.ip = 'BLOCK'
+          }
+        });
+    });
   }
   ngAfterViewInit() {
     gapi.load("client:auth2", function () {
@@ -62,7 +83,7 @@ export class HomePage {
           let dataarray = data[i]
           this.datetimecurrent = moment().format('YYYY-MM-DD HH:mm');
           if (this.datetimecurrent > moment(dataarray.datetime_start).format('YYYY-MM-DD HH:mm') && dataarray.status_update == 0) {
-            this.doUpdateChannelLive(dataarray);
+            this.doGetLinkChannelTemp(dataarray);
           }
           if (this.datetimecurrent > moment(dataarray.datetime_end).format('YYYY-MM-DD HH:mm')) {
             this.doClsdChannelLive(dataarray);
@@ -70,13 +91,35 @@ export class HomePage {
         }
       });
   }
-  doUpdateChannelLive(dataarray) {
+  doGetLinkChannelTemp(dataarray) {
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var str = xhr.responseText
+          var startparam = str.search('<iframe src="')
+          var endparam = str.search('"width="600"height="380"')
+          var urlvideo = str.substring(startparam + 13, endparam)
+          self.doUpdateChannelLive(dataarray, urlvideo)
+        } else {
+          self.doGetLinkChannelTemp(dataarray)
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', dataarray.url, true);
+    xhr.send(null);
+  }
+  doUpdateChannelLive(dataarray, urlvideo) {
     const headers = new HttpHeaders()
       .set("Content-Type", "application/json");
     this.api.put("table/z_channel_live",
       {
         "id": dataarray.id_channel,
-        "url": dataarray.url,
+        "url": urlvideo,
       },
       { headers })
       .subscribe(val => {
@@ -125,7 +168,7 @@ export class HomePage {
         this.api.put("table/z_channel_live_url",
           {
             "id": data[0].id,
-            "url": dataarray.url,
+            "url": urlvideo,
           },
           { headers })
           .subscribe(val => {
@@ -4143,7 +4186,7 @@ export class HomePage {
     rawFile.send(null);
   }
   doGetThumbnailPicture() {
-    this.api.get("table/z_channel_stream", { params: { limit: 500, filter: "tmdb_id='' OR tmdb_id IS NULL", sort: "id" + " DESC " } })
+    this.api.get("table/z_channel_stream", { params: { limit: 1000, filter: "tmdb_id='' OR tmdb_id IS NULL", sort: "id" + " DESC " } })
       .subscribe(val => {
         let data = val['data']
         for (let i = 0; i < data.length; i++) {
@@ -4157,7 +4200,7 @@ export class HomePage {
       });
   }
   doGetThumbnailPictureImdb() {
-    this.api.get("table/z_channel_stream", { params: { limit: 500, filter: "imdb_id='' OR imdb_id IS NULL", sort: "id" + " DESC " } })
+    this.api.get("table/z_channel_stream", { params: { limit: 5000, filter: "imdb_id='' OR imdb_id IS NULL", sort: "id" + " DESC " } })
       .subscribe(val => {
         let data = val['data']
         for (let i = 0; i < data.length; i++) {
@@ -4170,7 +4213,7 @@ export class HomePage {
       });
   }
   doGetThumbnailPictureOmdb() {
-    this.api.get("table/z_channel_stream", { params: { limit: 500, filter: "imdb_id !='' AND (imdb_title = '' OR imdb_title IS NULL)", sort: "id" + " DESC " } })
+    this.api.get("table/z_channel_stream", { params: { limit: 1000, filter: "imdb_id !='' AND (imdb_title = '' OR imdb_title IS NULL)", sort: "id" + " DESC " } })
       .subscribe(val => {
         let data = val['data']
         for (let i = 0; i < data.length; i++) {
@@ -4183,7 +4226,7 @@ export class HomePage {
       });
   }
   doGetThumbnailPictureTmdb() {
-    this.api.get("table/z_channel_stream", { params: { limit: 500, filter: "imdb_id = '' AND tmdb_id != '0' AND imdb_title = ''", sort: "id" + " DESC " } })
+    this.api.get("table/z_channel_stream", { params: { limit: 5000, filter: "imdb_id = '' AND tmdb_id != '0' AND imdb_title = ''", sort: "id" + " DESC " } })
       .subscribe(val => {
         let data = val['data']
         for (let i = 0; i < data.length; i++) {
@@ -4197,7 +4240,7 @@ export class HomePage {
   }
   doGetAPIThumbnail(id, title, thumbnail) {
     var self = this;
-    var dataurlapi = 'https://api.themoviedb.org/3/search/multi?api_key=bce811802b12ad5bd1f01b5f17bf4ff3&language=en-US&query=' + title + '&page=1&include_adult=false'
+    var dataurlapi = 'https://api.themoviedb.org/3/search/multi?api_key=bce811802b12ad5bd1f01b5f17bf4ff3&language=en-US&query=' + title + '&page=1&include_adult=true'
     this.readTextFileAPI(dataurlapi, function (text) {
       let datamovies = JSON.parse(text);
       if (datamovies.length != 0) {
@@ -4234,7 +4277,7 @@ export class HomePage {
   }
   doGetAPIDetailThumbnailOmdb(id, imdb) {
     var self = this;
-    var dataurlapidetail = 'http://www.omdbapi.com/?i=' + imdb + '&plot=full&apikey=1e28c8fe'
+    var dataurlapidetail = 'http://www.omdbapi.com/?i=' + imdb + '&plot=full&apikey=10f4ab83'
     this.readTextFileAPI(dataurlapidetail, function (text) {
       let datadetailmovies = JSON.parse(text);
       //console.log(datadetailmovies)
@@ -4483,21 +4526,6 @@ export class HomePage {
     rawFile.send(null);
   }
   doGetJson() {
-    /*var dataurlapi = 'https://anoboy.org/2019/02/boruto-naruto-next-generations-episode-94/'
-    var self = this
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState == XMLHttpRequest.DONE) {
-        var str = xhr.responseText
-        var start = str.search('source src="');
-        var end = str.search('" type="video/mp4">')
-        console.log(start)
-        console.log(end)
-        console.log(str.substring(start + 12, end))
-      }
-    }
-    xhr.open('GET', dataurlapi, true);
-    xhr.send(null);*/
     this.api.get("table/z_scan_loop", { params: { limit: 10 } })
       .subscribe(val => {
         let data = val['data']
@@ -4505,6 +4533,103 @@ export class HomePage {
           this.doGetListLink(i)
         }
       });
+  }
+  doGetJsonURL() {
+    this.api.get("table/z_channel_stream_temp_url", { params: { limit: 1000, filter: "status = 'OPEN'" } })
+      .subscribe(val => {
+        let data = val['data']
+        for (let j = 0; j < data.length; j++) {
+          let url = data[j].url
+          this.doGetListLinkURL(url)
+        }
+      });
+  }
+  doGetListLinkURL(url) {
+    var dataurlapi = url
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var str = xhr.responseText
+          var titleweb = str.search('Filmapik Nonton Film Streaming Movie Layarkaca21 Lk21 Dunia21 Bioskop Cinema 21 Box Office Subtitle Indonesia Gratis Online Download - Filmapik');
+          if (titleweb == -1) {
+            var starturl = str.search('link rel="canonical" href=')
+            var endurl = str.search('<meta property="og:image"')
+            var endurlseries = str.search('<meta property="og:type"')
+            var starttitle = str.search('<h3 itemprop="name">')
+            var endtitle = str.search('</h3>')
+            var startqualiity = str.search('<span class="quality">')
+            var endquality = str.search('</span></p><p><strong>Release:')
+            var starttrailer = str.search('https://www.youtube.com/embed/')
+            var endtrailer = str.search('" title="Nonton Cuplikan')
+            var startthumbnail = str.search('itemprop="thumbnailUrl" conTent="')
+            var endthumbnail = str.search('<!-- Micro data -->')
+            var endid = str.search('<style type="text/css">')
+            var title = str.substring(starttitle + 20, endtitle - 6)
+            var quality = str.substring(startqualiity + 22, endquality)
+            var thumbnail = str.substring(startthumbnail + 33, endthumbnail - 4)
+            var i = str.substring(endid - 11, endid - 5)
+            var trailer = ''
+            var country = ''
+            var url = ''
+            if (endurl != -1) {
+              url = str.substring(starturl + 27, endurl - 5)
+              if (starttrailer == -1) {
+                trailer = ''
+              }
+              else {
+                trailer = 'https://www.youtube.com/watch?v=' + str.substring(starttrailer + 30, endtrailer)
+              }
+              if (str.search('India</a></p></div>') != -1) {
+                country = 'India'
+              }
+              else if (str.search('Hong Kong</a></p></div>') != -1) {
+                country = 'Mandarin'
+              }
+              else if (str.search('Thailand</a></p></div>') != -1) {
+                country = 'Thailand'
+              }
+              else if (str.search('Japan</a></p></div>') != -1) {
+                country = 'Jepang'
+              }
+              else if (str.search('South Korea</a></p></div>') != -1) {
+                country = 'Korea'
+              }
+              else {
+                country = 'Barat'
+              }
+              self.readTextFileJSON(url + '/play/', function (text) {
+                var starturlvideo = text.search('https://efek.stream/playing')
+                var endurlvideo = text.search('" width="100%"')
+                var startthumbnailurlvideo = text.search('https://image.tmdb.org/t/p/w185/')
+                var urlvideo = text.substring(starturlvideo, endurlvideo)
+                var thumbnailurlvideo = text.substring(startthumbnailurlvideo, startthumbnailurlvideo + 63)
+                var reload = 0;
+                const headers = new HttpHeaders()
+                  .set("Content-Type", "application/json");
+                self.api.put("table/z_channel_stream_temp_url",
+                  {
+                    "url": url + '/',
+                    "status": 'CLSD'
+                  },
+                  { headers })
+                  .subscribe(val => {
+                  });
+                self.doPostListLink(i, title, quality, url, urlvideo, trailer, country, thumbnail, thumbnailurlvideo, reload)
+              });
+            }
+          }
+        } else {
+          self.doGetListLinkURL(url)
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', dataurlapi, true);
+    xhr.send(null);
   }
   doGetListLink(i) {
     var dataurlapi = 'https://filmapik.info/?p=' + i
@@ -4608,7 +4733,7 @@ export class HomePage {
       });
   }
   doGetUrlErrorDOCTYPE() {
-    this.api.get("table/z_channel_stream_temp", { params: { filter: "url LIKE '%DOCTYPE%'", limit: 100 } })
+    this.api.get("table/z_channel_stream_temp", { params: { filter: "url LIKE '%DOCTYPE%' AND status = 'OPEN'", limit: 100 } })
       .subscribe(val => {
         let data = val['data']
         for (let i = 0; i < data.length; i++) {
@@ -4719,7 +4844,7 @@ export class HomePage {
       });
   }
   doGetUrlVideoError() {
-    this.api.get("table/z_channel_stream_temp", { params: { filter: "url_video = ''", limit: 1000 } })
+    this.api.get("table/z_channel_stream_temp", { params: { filter: "url_video = '' AND status = 'OPEN'", limit: 1000 } })
       .subscribe(val => {
         let data = val['data']
         for (let i = 0; i < data.length; i++) {
@@ -4779,7 +4904,7 @@ export class HomePage {
       });
   }
   doGetUrl720() {
-    this.api.get("table/z_channel_stream_temp", { params: { filter: "url_video_720 = ''", limit: 1000 } })
+    this.api.get("table/z_channel_stream_temp", { params: { filter: "url_video_720 = '' AND status = 'OPEN'", limit: 1000 } })
       .subscribe(val => {
         let data = val['data']
         for (let i = 0; i < data.length; i++) {
@@ -4836,25 +4961,25 @@ export class HomePage {
       });
   }
   doGetUrlGoogle() {
-    this.api.get("table/z_channel_stream_temp", { params: { filter: "url_video_google = ''", limit: 5000 } })
+    this.api.get("table/z_channel_stream_temp", { params: { filter: "url_video_google = '' AND status = 'OPEN'", limit: 5000 } })
       .subscribe(val => {
         let data = val['data']
-          for (let i = 0; i < data.length; i++) {
-            let id = data[i].id
-            let url = data[i].url_video
-            this.doGetListLinkGoogle(id, url)
-          }
+        for (let i = 0; i < data.length; i++) {
+          let id = data[i].id
+          let url = data[i].url_video
+          this.doGetListLinkGoogle(id, url)
+        }
       });
   }
   doGetUrlUpdateGoogle() {
-    this.api.get("table/z_channel_stream_temp", { params: { filter: "url_video_google != ''", limit: 20000 } })
+    this.api.get("table/z_channel_stream_temp", { params: { filter: "url_video_google != '' AND status = 'OPEN'", limit: 20000 } })
       .subscribe(val => {
         let data = val['data']
-          for (let i = 0; i < data.length; i++) {
-            let id = data[i].id
-            let url = data[i].url_video
-            this.doGetListLinkGoogle(id, url)
-          }
+        for (let i = 0; i < data.length; i++) {
+          let id = data[i].id
+          let url = data[i].url_video
+          this.doGetListLinkGoogle(id, url)
+        }
       });
   }
   doGetListLinkGoogle(id, url) {
@@ -4904,25 +5029,25 @@ export class HomePage {
       });
   }
   doGetUrlGoogle720() {
-    this.api.get("table/z_channel_stream_temp", { params: { filter: "url_video_google_720 = ''", limit: 5000 } })
+    this.api.get("table/z_channel_stream_temp", { params: { filter: "url_video_google_720 = '' AND status = 'OPEN'", limit: 5000 } })
       .subscribe(val => {
         let data = val['data']
-          for (let i = 0; i < data.length; i++) {
-            let id = data[i].id
-            let url = data[i].url_video_720
-            this.doGetListLinkGoogle720(id, url)
-          }
+        for (let i = 0; i < data.length; i++) {
+          let id = data[i].id
+          let url = data[i].url_video_720
+          this.doGetListLinkGoogle720(id, url)
+        }
       });
   }
   doGetUrlUpdateGoogle720() {
-    this.api.get("table/z_channel_stream_temp", { params: { filter: "url_video_google_720 != ''", limit: 20000 } })
+    this.api.get("table/z_channel_stream_temp", { params: { filter: "url_video_google_720 != '' AND status = 'OPEN'", limit: 20000 } })
       .subscribe(val => {
         let data = val['data']
-          for (let i = 0; i < data.length; i++) {
-            let id = data[i].id
-            let url = data[i].url_video_720
-            this.doGetListLinkGoogle720(id, url)
-          }
+        for (let i = 0; i < data.length; i++) {
+          let id = data[i].id
+          let url = data[i].url_video_720
+          this.doGetListLinkGoogle720(id, url)
+        }
       });
   }
   doGetListLinkGoogle720(id, url) {
@@ -4968,6 +5093,810 @@ export class HomePage {
         if (reload < 3) {
           reload = reload + 1
           this.doPutListLinkGoogle720(id, urlvideo, reload)
+        }
+      });
+  }
+  doGettoStream() {
+    this.api.get("table/z_channel_stream_temp", { params: { limit: 1000, filter: "(url_video != '' OR url_video_720 != '') AND status = 'OPEN'" } })
+      .subscribe(val => {
+        let data = val['data']
+        for (let i = 0; i < data.length; i++) {
+          let dataget = data[i]
+          this.doPosttoStream(dataget)
+        }
+      });
+  }
+  doPosttoStream(dataget) {
+    this.getNextNo().subscribe(val => {
+      let nextno = val['nextno'];
+      const headers = new HttpHeaders()
+        .set("Content-Type", "application/json");
+      this.api.post("table/z_channel_stream",
+        {
+          "id": nextno,
+          "type": 'STREAM',
+          "stream": '',
+          "xml": '',
+          "plugin": '',
+          "exo": '',
+          "thumbnail_picture": dataget.thumbnail_tmdb,
+          "name": 'Film ' + dataget.country,
+          "country": dataget.country,
+          "genre": null,
+          "title": dataget.title + " (" + dataget.quality + ")",
+          "title_backup": dataget.title,
+          "quality_backup": dataget.quality,
+          "trailer": dataget.trailer,
+          "url": dataget.url_video,
+          "status": '',
+          "status_2": '',
+          "date": moment().format('YYYY-MM-DD HH:mm:ss')
+        },
+        { headers })
+        .subscribe(val => {
+          if (dataget.url_video != '') {
+            this.doPosttoStream360(dataget, nextno)
+          }
+          else {
+            this.doPosttoStream720(dataget, nextno)
+          }
+        }, (err) => {
+          this.doPosttoStream(dataget)
+        })
+    });
+  }
+  doPosttoStream360(dataget, nextno) {
+    this.getNextNoUrl().subscribe(val => {
+      let nextnourl = val['nextno'];
+      const headers = new HttpHeaders()
+        .set("Content-Type", "application/json");
+      this.api.post("table/z_channel_stream_url",
+        {
+          "id": nextnourl,
+          "id_channel": nextno,
+          "type": 'STREAM',
+          "stream": '',
+          "xml": '',
+          "plugin": '',
+          "exo": '',
+          "thumbnail_picture": dataget.thumbnail_tmdb,
+          "name": 'Film ' + dataget.country,
+          "country": dataget.country,
+          "genre": null,
+          "title": dataget.title + " (" + dataget.quality + ")",
+          "quality": 'Server ES (360p)',
+          "trailer": dataget.trailer,
+          "url": dataget.url_video,
+          "status": '',
+          "status_2": '',
+          "date": moment().format('YYYY-MM-DD HH:mm:ss'),
+        },
+        { headers })
+        .subscribe(val => {
+          if (dataget.url_video_720 != '') {
+            this.doPosttoStream720(dataget, nextno)
+          }
+          else {
+            this.doClsdServerTemp(dataget)
+          }
+        }, (err) => {
+          this.doPosttoStream360(dataget, nextno)
+        })
+    });
+  }
+  doPosttoStream720(dataget, nextno) {
+    this.getNextNoUrl().subscribe(val => {
+      let nextnourl = val['nextno'];
+      const headers = new HttpHeaders()
+        .set("Content-Type", "application/json");
+      this.api.post("table/z_channel_stream_url",
+        {
+          "id": nextnourl,
+          "id_channel": nextno,
+          "type": 'STREAM',
+          "stream": '',
+          "xml": '',
+          "plugin": '',
+          "exo": '',
+          "thumbnail_picture": dataget.thumbnail_tmdb,
+          "name": 'Film ' + dataget.country,
+          "country": dataget.country,
+          "genre": null,
+          "title": dataget.title + " (" + dataget.quality + ")",
+          "quality": 'Server ES (720p)',
+          "trailer": dataget.trailer,
+          "url": dataget.url_video_720,
+          "status": '',
+          "status_2": '',
+          "date": moment().format('YYYY-MM-DD HH:mm:ss'),
+        },
+        { headers })
+        .subscribe(val => {
+          this.doClsdServerTemp(dataget)
+        }, (err) => {
+          this.doPosttoStream720(dataget, nextno)
+        })
+    });
+  }
+  doClsdServerTemp(dataget) {
+    const headers = new HttpHeaders()
+      .set("Content-Type", "application/json");
+    this.api.put("table/z_channel_stream_temp",
+      {
+        "id": dataget.id,
+        "status": 'CLSD'
+      },
+      { headers })
+      .subscribe(val => {
+      }, err => {
+        this.doClsdServerTemp(dataget)
+      });
+  }
+  getNextNo() {
+    return this.api.get('nextno/z_channel_stream/id')
+  }
+  getNextNoUrl() {
+    return this.api.get('nextno/z_channel_stream_url/id')
+  }
+  doGetUrlUseeTV() {
+    this.api.get("table/z_get_url", { params: { limit: 1000, filter: "status = 'OPEN'" } })
+      .subscribe(val => {
+        let data = val['data']
+        for (let i = 0; i < data.length; i++) {
+          let dataurl = data[i]
+          this.doGetUseeTV(dataurl)
+        }
+      });
+  }
+  doGetUseeTV(dataurl) {
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var str = xhr.responseText
+          let startparam = str.search(dataurl.start_param)
+          let endparam = str.search(dataurl.end_param)
+          var urlvideo = str.substring(startparam, endparam)
+          self.doUpdateURLUseeTV(dataurl, urlvideo)
+        } else {
+          self.doGetUseeTV(dataurl)
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', dataurl.url, true);
+    xhr.send(null);
+  }
+  doUpdateURLUseeTV(dataurl, urlvideo) {
+    const headers = new HttpHeaders()
+      .set("Content-Type", "application/json");
+    this.api.put("table/z_get_url",
+      {
+        "id": dataurl.id,
+        "url_result": urlvideo,
+        "datetime": moment().format('YYYY-MM-DD HH:mm')
+      },
+      { headers })
+      .subscribe(val => {
+        this.doUpdateURLUseeTVChannel(dataurl, urlvideo)
+      }, err => {
+        this.doUpdateURLUseeTV(dataurl, urlvideo)
+      });
+  }
+  doUpdateURLUseeTVChannel(dataurl, urlvideo) {
+    this.api.get("table/z_channel_url", { params: { limit: 10, filter: "id_channel =" + "'" + dataurl.id_channel + "'" } })
+      .subscribe(val => {
+        let data = val['data']
+        const headers = new HttpHeaders()
+          .set("Content-Type", "application/json");
+        this.api.put("table/z_channel_url",
+          {
+            "id": data[0].id,
+            "url": urlvideo
+          },
+          { headers })
+          .subscribe(val => {
+            const headers = new HttpHeaders()
+              .set("Content-Type", "application/json");
+            this.api.put("table/z_channel",
+              {
+                "id": dataurl.id_channel,
+                "url": urlvideo
+              },
+              { headers })
+              .subscribe(val => {
+              }, err => {
+                this.doUpdateURLUseeTVChannel(dataurl, urlvideo)
+              });
+          }, err => {
+            this.doUpdateURLUseeTVChannel(dataurl, urlvideo)
+          });
+      });
+  }
+  doGetLive() {
+    this.api.get("table/z_channel_live_get", { params: { limit: 100, filter: "status= 'OPEN'" } })
+      .subscribe(val => {
+        let data = val['data']
+        for (let i = 0; i < data.length; i++) {
+          let name = data[i].name
+          let url = data[i].url
+          this.doGetURLLive(name, url)
+        }
+      });
+  }
+  doGetURLLive(name, url) {
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var str = xhr.responseText
+          var count = str.split("http://m.nobartv.com/tv-bola/").length - 1
+          let startparam: any;
+          let endparam: any;
+          console.log(count)
+          for (let i = 1; i <= count; i++) {
+            startparam = str.indexOf('http://m.nobartv.com/tv-bola/', startparam + 1)
+            endparam = str.indexOf('rel="index,follow" target="_blank">', endparam + 1)
+            var urlvideo = str.substring(startparam, endparam - 3)
+            self.doGetURLLiveDetail(name, urlvideo)
+          }
+        } else {
+          self.doGetURLLive(name, url)
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', url, true);
+    xhr.send(null);
+  }
+  doGetURLLiveDetail(name, urlvideo) {
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var str = xhr.responseText
+          let startparam1 = str.indexOf('<span itemprop="title"><b>')
+          let endparam1 = str.indexOf('</b></span>')
+          let startparam2 = str.indexOf('<span itemprop="title"><b>', startparam1 + 1)
+          let endparam2 = str.indexOf('</b></span>', endparam1 + 1)
+          let startparam3 = str.indexOf('<span itemprop="title"><b>', startparam2 + 1)
+          let endparam3 = str.indexOf('</b></span>', endparam2 + 1)
+
+          let minggu = str.indexOf('<div class="dtime"><b>Minggu')
+          let senin = str.indexOf('<div class="dtime"><b>Senin')
+          let selasa = str.indexOf('<div class="dtime"><b>Selasa')
+          let rabu = str.indexOf('<div class="dtime"><b>Rabu')
+          let kamis = str.indexOf('<div class="dtime"><b>Kamis')
+          let jumat = str.indexOf('<div class="dtime"><b>Jumat')
+          let sabtu = str.indexOf('<div class="dtime"><b>Sabtu')
+
+          let minggudate = str.indexOf('<div class="date">Minggu')
+          let senindate = str.indexOf('<div class="date">Senin')
+          let selasadate = str.indexOf('<div class="date">Selasa')
+          let rabudate = str.indexOf('<div class="date">Rabu')
+          let kamisdate = str.indexOf('<div class="date">Kamis')
+          let jumatdate = str.indexOf('<div class="date">Jumat')
+          let sabtudate = str.indexOf('<div class="date">Sabtu')
+
+          let datestart = str.indexOf('<div class="dtime"><b>')
+          let dateend = str.indexOf('</b></div>')
+          let datestart2 = str.indexOf('<div class="date">')
+          let timestart2 = str.indexOf('<div class="time"><b>')
+          var date: any;
+          var datefinish: any;
+          var timefull: any;
+          var timefix: any;
+          var title: any;
+          var datefix: any;
+
+          if (minggu != -1) {
+            date = str.substring(datestart + 30, dateend - 10).replace("Mei", "May")
+            timefull = str.substring(datestart + 30, dateend - 4)
+
+            timefix = timefull.substring(timefull.length - 5)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+          else if (senin != -1) {
+            date = str.substring(datestart + 29, dateend - 10).replace("Mei", "May")
+            timefull = str.substring(datestart + 29, dateend - 4)
+
+            timefix = timefull.substring(timefull.length - 5)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+          else if (selasa != -1) {
+            date = str.substring(datestart + 30, dateend - 10).replace("Mei", "May")
+            timefull = str.substring(datestart + 30, dateend - 4)
+
+            timefix = timefull.substring(timefull.length - 5)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+          else if (rabu != -1) {
+            date = str.substring(datestart + 28, dateend - 10).replace("Mei", "May")
+            timefull = str.substring(datestart + 28, dateend - 4)
+
+            timefix = timefull.substring(timefull.length - 5)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+          else if (kamis != -1) {
+            date = str.substring(datestart + 29, dateend - 10).replace("Mei", "May")
+            timefull = str.substring(datestart + 29, dateend - 4)
+
+            timefix = timefull.substring(timefull.length - 5)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+          else if (jumat != -1) {
+            date = str.substring(datestart + 29, dateend - 10).replace("Mei", "May")
+            timefull = str.substring(datestart + 29, dateend - 4)
+
+            timefix = timefull.substring(timefull.length - 5)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+          else if (sabtu != -1) {
+            date = str.substring(datestart + 29, dateend - 10).replace("Mei", "May")
+            timefull = str.substring(datestart + 29, dateend - 4)
+
+            timefix = timefull.substring(timefull.length - 5)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+          else if (minggudate != -1) {
+            date = str.substring(datestart2 + 26, timestart2 - 19).replace("Mei", "May")
+            timefix = str.substring(timestart2 + 21, timestart2 + 26)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+          else if (senindate != -1) {
+            date = str.substring(datestart2 + 25, timestart2 - 19).replace("Mei", "May")
+            timefix = str.substring(timestart2 + 21, timestart2 + 26)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+          else if (selasadate != -1) {
+            date = str.substring(datestart2 + 26, timestart2 - 19).replace("Mei", "May")
+            timefix = str.substring(timestart2 + 21, timestart2 + 26)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+          else if (rabudate != -1) {
+            date = str.substring(datestart2 + 24, timestart2 - 19).replace("Mei", "May")
+            timefix = str.substring(timestart2 + 21, timestart2 + 26)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+          else if (kamisdate != -1) {
+            date = str.substring(datestart2 + 25, timestart2 - 19).replace("Mei", "May")
+            timefix = str.substring(timestart2 + 21, timestart2 + 26)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+          else if (jumatdate != -1) {
+            date = str.substring(datestart2 + 25, timestart2 - 19).replace("Mei", "May")
+            timefix = str.substring(timestart2 + 21, timestart2 + 26)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+          else if (sabtudate != -1) {
+            date = str.substring(datestart2 + 25, timestart2 - 19).replace("Mei", "May")
+            timefix = str.substring(timestart2 + 21, timestart2 + 26)
+            title = str.substring(startparam3 + 26, endparam3)
+            datefix = moment(date + ' 2019 ' + timefix).format('YYYY-MM-DD HH:mm')
+            datefinish = moment(datefix, 'YYYY-MM-DD HH:mm')
+              .add(2, 'hours')
+              .format('YYYY-MM-DD HH:mm');
+            let justdate = moment(datefix).format('YYYY-MM-DD')
+            self.api.get("table/z_channel_live", { params: { limit: 100, filter: "title= " + "'" + title + "' AND date =" + "'" + justdate + "'" } })
+              .subscribe(val => {
+                let data = val['data']
+                if (data.length == 0) {
+                  self.doPostLive(name, title, urlvideo, datefix, datefinish)
+                }
+                else {
+                  let id = data[0].id
+                  self.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+                }
+              });
+          }
+
+        } else {
+          self.doGetURLLiveDetail(name, urlvideo)
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', urlvideo, true);
+    xhr.send(null);
+  }
+  getNextNoLive() {
+    return this.api.get('nextno/z_channel_live/id')
+  }
+  getNextNoLiveUrl() {
+    return this.api.get('nextno/z_channel_live_url/id')
+  }
+  getNextNoLiveTemp() {
+    return this.api.get('nextno/z_channel_live_temp/id')
+  }
+  doPostLive(name, title, urlvideo, datefix, datefinish) {
+    this.getNextNoLive().subscribe(val => {
+      let nextno = val['nextno'];
+      const headers = new HttpHeaders()
+        .set("Content-Type", "application/json");
+      this.api.post("table/z_channel_live",
+        {
+          "id": nextno,
+          "stream": '',
+          "type": 'LIVE',
+          "plugin": '',
+          "category": name,
+          "title": title,
+          "url": '',
+          "date": moment(datefix).format('YYYY-MM-DD'),
+          "datestart": datefix,
+          "datefinish": datefinish,
+          "status": 'OPEN',
+          "status_2": 'OPEN'
+        },
+        { headers })
+        .subscribe(val => {
+          this.doPostLiveURL(nextno, name, title, urlvideo, datefix, datefinish)
+        }, (err) => {
+          //this.doPostLive(name, title, urlvideo, datefix, datefinish)
+        })
+    });
+  }
+  doPostLiveURL(nextno, name, title, urlvideo, datefix, datefinish) {
+    this.getNextNoLiveUrl().subscribe(val => {
+      let nextnoa = val['nextno'];
+      const headers = new HttpHeaders()
+        .set("Content-Type", "application/json");
+      this.api.post("table/z_channel_live_url",
+        {
+          "id": nextnoa,
+          "id_channel": nextno,
+          "stream": '',
+          "type": 'LIVE',
+          "plugin": '',
+          "category": name,
+          "title": title,
+          "quality": 'Server 1',
+          "url": '',
+          "date": moment(datefix).format('YYYY-MM-DD'),
+          "datestart": datefix,
+          "datefinish": datefinish,
+          "status": 'OPEN',
+          "status_2": 'OPEN'
+        },
+        { headers })
+        .subscribe(val => {
+          this.doPostLiveTemp(nextno, name, title, urlvideo, datefix, datefinish)
+        }, (err) => {
+          this.doPostLiveURL(nextno, name, title, urlvideo, datefix, datefinish)
+        })
+    });
+  }
+  doPostLiveTemp(nextno, name, title, urlvideo, datefix, datefinish) {
+    this.getNextNoLiveTemp().subscribe(val => {
+      let nextnolivetemp = val['nextno'];
+      const headers = new HttpHeaders()
+        .set("Content-Type", "application/json");
+      this.api.post("table/z_channel_live_temp",
+        {
+          "id": nextnolivetemp,
+          "id_channel": nextno,
+          "name": title,
+          "url": urlvideo,
+          "datetime_start": datefix,
+          "datetime_end": datefinish,
+          "status_update": 0,
+          "status": 'OPEN',
+          "status_2": 'OPEN'
+        },
+        { headers })
+        .subscribe(val => {
+        }, (err) => {
+          this.doPostLiveTemp(nextno, name, title, urlvideo, datefix, datefinish)
+        })
+    });
+  }
+  doPutLive(id, name, title, urlvideo, datefix, datefinish) {
+    const headers = new HttpHeaders()
+      .set("Content-Type", "application/json");
+    this.api.put("table/z_channel_live",
+      {
+        "id": id,
+        "stream": '',
+        "type": 'LIVE',
+        "plugin": '',
+        "category": name,
+        "title": title,
+        "url": '',
+        "date": moment(datefix).format('YYYY-MM-DD'),
+        "datestart": datefix,
+        "datefinish": datefinish,
+        "status": 'OPEN',
+        "status_2": 'OPEN'
+      },
+      { headers })
+      .subscribe(val => {
+        this.doPutLiveURL(id, name, title, urlvideo, datefix, datefinish)
+      }, (err) => {
+        //this.doPutLive(id, name, title, urlvideo, datefix, datefinish)
+      })
+  }
+  doPutLiveURL(id, name, title, urlvideo, datefix, datefinish) {
+    this.api.get("table/z_channel_live_url", { params: { limit: 100, filter: "id_channel= " + "'" + id + "'" } })
+      .subscribe(val => {
+        let data = val['data']
+        if (data.length == 0) {
+          let nextno = id
+          this.doPostLiveURL(nextno, name, title, urlvideo, datefix, datefinish)
+        }
+        else {
+          const headers = new HttpHeaders()
+            .set("Content-Type", "application/json");
+          this.api.put("table/z_channel_live_url",
+            {
+              "id": data[0].id,
+              "id_channel": id,
+              "stream": '',
+              "type": 'LIVE',
+              "plugin": '',
+              "category": name,
+              "title": title,
+              "quality": 'Server 1',
+              "url": '',
+              "date": moment(datefix).format('YYYY-MM-DD'),
+              "datestart": datefix,
+              "datefinish": datefinish,
+              "status": 'OPEN',
+              "status_2": 'OPEN'
+            },
+            { headers })
+            .subscribe(val => {
+              this.doPutLiveTemp(id, name, title, urlvideo, datefix, datefinish)
+            }, (err) => {
+              this.doPutLiveURL(id, name, title, urlvideo, datefix, datefinish)
+            })
+        }
+      });
+  }
+  doPutLiveTemp(id, name, title, urlvideo, datefix, datefinish) {
+    this.api.get("table/z_channel_live_temp", { params: { limit: 100, filter: "id_channel= " + "'" + id + "'" } })
+      .subscribe(val => {
+        let data = val['data']
+        if (data.length == 0) {
+          let nextno = id
+          this.doPostLiveTemp(nextno, name, title, urlvideo, datefix, datefinish)
+        }
+        else {
+          const headers = new HttpHeaders()
+            .set("Content-Type", "application/json");
+          this.api.put("table/z_channel_live_temp",
+            {
+              "id": data[0].id,
+              "id_channel": id,
+              "name": title,
+              "url": urlvideo,
+              "datetime_start": datefix,
+              "datetime_end": datefinish,
+              "status_update": 0,
+              "status": 'OPEN',
+              "status_2": 'OPEN'
+            },
+            { headers })
+            .subscribe(val => {
+            }, (err) => {
+              this.doPutLiveTemp(id, name, title, urlvideo, datefix, datefinish)
+            })
         }
       });
   }

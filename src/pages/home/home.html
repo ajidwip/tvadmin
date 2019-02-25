@@ -5,7 +5,7 @@
       <p>{{channel.url}}</p>
     </ion-item>
   </ion-list>-->
-  <ion-grid>
+  <ion-grid *ngIf="ip == 'OK'">
     <ion-row style="border:1px solid;border-color:#dedede;">
       <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Playlist Item</ion-col>
       <ion-col col-2 style="border:1px solid;border-color:#dedede;">
@@ -175,6 +175,14 @@
       </ion-col>
     </ion-row>
     <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Data Url Stream 2</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetJsonURL()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
       <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Url Error DOCTYPE</ion-col>
       <ion-col col-2 style="border:1px solid;border-color:#dedede;">
         <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetUrlErrorDOCTYPE()">
@@ -215,24 +223,32 @@
       </ion-col>
     </ion-row>
     <ion-row style="border:1px solid;border-color:#dedede;">
-      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get URL Update Google</ion-col>
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Post URL To Stream</ion-col>
       <ion-col col-2 style="border:1px solid;border-color:#dedede;">
-        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetUrlUpdateGoogle()">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGettoStream()">
           <ion-icon name="md-open"></ion-icon>
         </button>
       </ion-col>
     </ion-row>
     <ion-row style="border:1px solid;border-color:#dedede;">
-      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get URL Update Google 720</ion-col>
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get URL Video Streaming</ion-col>
       <ion-col col-2 style="border:1px solid;border-color:#dedede;">
-        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetUrlUpdateGoogle720()">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetUrlUseeTV()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get URL Live</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetLive()">
           <ion-icon name="md-open"></ion-icon>
         </button>
       </ion-col>
     </ion-row>
   </ion-grid>
 </ion-content>
-<ion-fab bottom right>
+<!--<ion-fab bottom right>
   <button ion-fab>
     <ion-icon name="md-apps"></ion-icon>
   </button>
@@ -318,7 +334,7 @@
       <ion-icon name="md-film"></ion-icon>
     </button>
   </ion-fab-list>
-</ion-fab>
+</ion-fab>-->
 <ion-footer>
 
 </ion-footer>
