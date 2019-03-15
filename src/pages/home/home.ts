@@ -6639,4 +6639,78 @@ export class HomePage {
         this.doPostKel(kel)
       });
   }
+  doGetLoopKel() {
+    this.api.get("table/z_scan_loop", { params: { limit: 1000, filter: "name='KEL'" } })
+      .subscribe(val => {
+        let data = val['data'][0]
+        this.doGetKelAll(data)
+      });
+  }
+  doGetKelAll(data) {
+    this.api.get("table/z_kel", { params: { limit: 1000, filter: "id >=" + data.start_scan + " AND id <=" + data.finish_scan + " AND status='OPEN'" } })
+      .subscribe(val => {
+        let kelurahan = val['data']
+        for (let i = 0; i < kelurahan.length; i++) {
+          let kel = kelurahan[i]
+          this.doGetJsonTPS(kel)
+        }
+
+      }, err => {
+        this.doGetKelAll(data)
+      });
+  }
+  doGetJsonTPS(kel) {
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var datajson = JSON.parse(xhr.responseText)
+          let data = datajson.aaData
+          for (let i = 0; i < data.length; i++) {
+            let tps = data[i]
+            self.doPostTPS(tps)
+          }
+        }
+        else if (xhr.status == 404) {
+
+        }
+        else if (xhr.status == 301) {
+
+        }
+        else if (xhr.status == 500) {
+
+        }
+        else {
+          self.doGetJsonTPS(kel)
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', 'https://infopemilu.kpu.go.id/pilkada2018/pemilih/dpt/1/' + kel.prov + '/' + kel.kab + '/' + kel.kec + '/' + kel.kel + '/listDps.json', true);
+    xhr.send(null);
+  }
+  doPostTPS(tps) {
+    const headers = new HttpHeaders()
+      .set("Content-Type", "application/json");
+    this.api.post("table/z_tps",
+      {
+        "prov": tps.namaPropinsi,
+        "kab": tps.namaKabKota,
+        "kec": tps.namaKecamatan,
+        "kel": tps.namaKelurahan,
+        "tps": tps.tps,
+        "total_pemilih": tps.totalPemilih,
+        "pemilih_laki": tps.jmlPemilihLaki,
+        "pemilih_perempuan": tps.jmlPemilihPerempuan,
+        "status": 'OPEN'
+      },
+      { headers })
+      .subscribe(val => {
+      }, err => {
+        this.doPostTPS(tps)
+      });
+  }
 }
