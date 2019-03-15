@@ -10,8 +10,8 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class ApiProvider {
 
-  private api_url = 'http://101.255.60.202/webapi5/api';
-  private api_url_live = 'http://101.255.60.202/serverapi/api';
+  private api_url = 'http://10.10.10.7/webapi5/api';
+  private api_url_live = 'http://10.10.10.7/serverapi/api';
 
   constructor(public http: HttpClient) {
   }

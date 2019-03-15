@@ -5,7 +5,8 @@
       <p>{{channel.url}}</p>
     </ion-item>
   </ion-list>-->
-  <ion-grid *ngIf="ip == 'OK'">
+  <!-- <ion-grid *ngIf="ip == 'OK'"> -->
+  <ion-grid>
     <ion-row style="border:1px solid;border-color:#dedede;">
       <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Playlist Item</ion-col>
       <ion-col col-2 style="border:1px solid;border-color:#dedede;">
@@ -242,6 +243,86 @@
       <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get URL Live</ion-col>
       <ion-col col-2 style="border:1px solid;border-color:#dedede;">
         <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetLive()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get URL Anime</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetJsonAnime()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get URL Anime Update</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetJsonAnimeUpdate()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get List Anime</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetListAnime()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get List Anime Detail</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetListAnimeData()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get List Anime Detail URL</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetListAnimeDataUrl()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Calendar</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetCalendar()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;" (click)="doDetail()">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Prov</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetJsonProv()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Kab</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetProvAll()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Kec</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetLoopKab()">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="border:1px solid;border-color:#dedede;">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">Get Kel</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetLoopKec()">
           <ion-icon name="md-open"></ion-icon>
         </button>
       </ion-col>

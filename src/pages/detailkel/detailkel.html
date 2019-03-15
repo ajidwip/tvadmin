@@ -1,0 +1,12 @@
+<ion-content style="background: #ffffff;">
+  <ion-grid>
+    <ion-row style="border:1px solid;border-color:#dedede;" *ngFor="let kel of kelurahan">
+      <ion-col padding col-10 style="border:1px solid;border-color:#dedede;font-size: 20px;margin:auto;">{{kel.kel}}</ion-col>
+      <ion-col col-2 style="border:1px solid;border-color:#dedede;">
+        <button style="height:100%;margin:auto;" ion-button full color="primary" (click)="doGetTps(kel)">
+          <ion-icon name="md-open"></ion-icon>
+        </button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

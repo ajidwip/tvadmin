@@ -98,9 +98,9 @@ export class HomePage {
       if (xhr.readyState == XMLHttpRequest.DONE) {
         if (xhr.status == 200) {
           var str = xhr.responseText
-          var startparam = str.search('<iframe src="')
-          var endparam = str.search('"width="600"height="380"')
-          var urlvideo = str.substring(startparam + 13, endparam)
+          var startparam = str.search('<video src="')
+          var endparam = str.search('" controls=""')
+          var urlvideo = str.substring(startparam + 12, endparam)
           self.doUpdateChannelLive(dataarray, urlvideo)
         } else {
           self.doGetLinkChannelTemp(dataarray)
@@ -119,6 +119,9 @@ export class HomePage {
     this.api.put("table/z_channel_live",
       {
         "id": dataarray.id_channel,
+        "stream": '0',
+        "plugin": '1',
+        "exo": '1',
         "url": urlvideo,
       },
       { headers })
@@ -132,16 +135,6 @@ export class HomePage {
           },
           { headers })
           .subscribe(val => {
-            const headers = new HttpHeaders()
-              .set("Content-Type", "application/json");
-            this.api.put("table/z_premium",
-              {
-                "id": dataarray.id_premium,
-                "id_channel_live": dataarray.id_channel,
-              },
-              { headers })
-              .subscribe(val => {
-              });
           });
         let dateupdate = moment().format('YYYY-MM-DD HH:mm');
         var datetime = moment(dataarray.datetime_start).format('DD-MM-YYYY HH:mm')
@@ -168,6 +161,9 @@ export class HomePage {
         this.api.put("table/z_channel_live_url",
           {
             "id": data[0].id,
+            "stream": '0',
+            "plugin": '1',
+            "exo": '1',
             "url": urlvideo,
           },
           { headers })
@@ -181,16 +177,6 @@ export class HomePage {
               },
               { headers })
               .subscribe(val => {
-                const headers = new HttpHeaders()
-                  .set("Content-Type", "application/json");
-                this.api.put("table/z_premium",
-                  {
-                    "id": dataarray.id_premium,
-                    "id_channel_live": dataarray.id_channel,
-                  },
-                  { headers })
-                  .subscribe(val => {
-                  });
               });
             let dateupdate = moment().format('YYYY-MM-DD HH:mm');
             var datetime = moment(dataarray.datetime_start).format('DD-MM-YYYY HH:mm')
@@ -232,16 +218,6 @@ export class HomePage {
           },
           { headers })
           .subscribe(val => {
-            const headers = new HttpHeaders()
-              .set("Content-Type", "application/json");
-            this.api.put("table/z_premium",
-              {
-                "id": dataarray.id_premium,
-                "id_channel_live": '',
-              },
-              { headers })
-              .subscribe(val => {
-              });
           });
         let dateupdate = moment().format('YYYY-MM-DD HH:mm');
         var titleemail = [
@@ -280,16 +256,7 @@ export class HomePage {
               },
               { headers })
               .subscribe(val => {
-                const headers = new HttpHeaders()
-                  .set("Content-Type", "application/json");
-                this.api.put("table/z_premium",
-                  {
-                    "id": dataarray.id_premium,
-                    "id_channel_live": '',
-                  },
-                  { headers })
-                  .subscribe(val => {
-                  });
+
               });
             let dateupdate = moment().format('YYYY-MM-DD HH:mm');
             var titleemail = [
@@ -4526,7 +4493,7 @@ export class HomePage {
     rawFile.send(null);
   }
   doGetJson() {
-    this.api.get("table/z_scan_loop", { params: { limit: 10 } })
+    this.api.get("table/z_scan_loop", { params: { limit: 10, filter: "name='MOVIES'" } })
       .subscribe(val => {
         let data = val['data']
         for (let i = data[0].start_scan; i <= data[0].finish_scan; i++) {
@@ -5898,6 +5865,778 @@ export class HomePage {
               this.doPutLiveTemp(id, name, title, urlvideo, datefix, datefinish)
             })
         }
+      });
+  }
+  doGetJsonAnime() {
+    this.api.get("table/z_scan_loop", { params: { limit: 10, filter: "name='ANIME'" } })
+      .subscribe(val => {
+        let data = val['data']
+        for (let i = data[0].start_scan; i <= data[0].finish_scan; i++) {
+          this.doGetListLinkAnime(i)
+        }
+      });
+  }
+  doGetJsonAnimeUpdate() {
+    this.api.get("table/z_channel_stream_detail_temp", { params: { limit: 10000, filter: "status='OPEN' AND (url_ori = '' OR url_ori IS NULL)" } })
+      .subscribe(val => {
+        let data = val['data']
+        for (let j = 0; j < data.length; j++) {
+          let i = data[j].id
+          this.doGetListLinkAnime(i)
+        }
+      });
+  }
+  doGetListLinkAnime(i) {
+    var dataurlapi = 'https://anoboy.org/?p=' + i
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var str = xhr.responseText
+          var titleweb = str.search('Page not found - anoBoy.org');
+          if (titleweb == -1) {
+            var starttitle = str.search('<title>')
+            var endtitle = str.search('</title>')
+            var starturlori = str.search('<link rel="canonical" href="')
+            var endurlori = str.search('<link rel="publisher" href="')
+            var starteps = str.search('Episode')
+            var endeps = str.search('Subtitle Indonesia')
+            var startthumbnail = str.indexOf('<amp-img src="')
+            var startthumbnailfix = str.indexOf('<amp-img src="', startthumbnail + 1)
+            var endthumbnailfix = str.indexOf('" class="maingambar"')
+            var starturlold = str.search('<source src="/mov')
+            var endurlold = str.search('" type="video/mp4">')
+            var starturl = str.search('<source src="')
+            var endurl = str.search('" type="video/mp4">')
+            var starturlembed = str.search('<iframe title="noboy" id="mediaplayer" src="')
+            var endurlembed = str.search('" allowfullscreen="true"')
+            var starturlembedold = str.search("id='mediaplayer'")
+            var endurlembedold = str.search("' allowfullscreen")
+            var url: any;
+            var stream: any;
+            var title = str.substring(starttitle + 7, endtitle - 32)
+            var urlori = str.substring(starturlori + 28, endurlori - 5)
+            //var eps = str.substring(starteps + 8, endeps - 1)
+            var thumbnail = str.substring(startthumbnailfix + 14, endthumbnailfix)
+            if (starturlold != -1) {
+              url = 'http://anoboy.org' + str.substring(starturl + 13, endurl)
+              stream = '0'
+            }
+            else if (starturl != -1) {
+              url = str.substring(starturl + 13, endurl)
+              stream = '0'
+            }
+            else if (starturlembed != -1) {
+              url = str.substring(starturlembed + 44, endurlembed)
+              stream = ''
+            }
+            else if (starturlembedold != -1) {
+              url = 'http://anoboy.org' + str.substring(starturlembedold + 22, endurlembedold)
+              stream = ''
+            }
+            if (starturl != -1 || starturlembed != -1 || starturlembedold != -1) {
+              var titlefix: any;
+              var eps: any;
+              if (title.search('Episode') != -1) {
+                titlefix = title.substring(0, title.search('Episode') - 1)
+                eps = title.substring(title.search('Episode') + 8, title.length)
+              }
+              else {
+                titlefix = title
+                eps = ''
+              }
+              self.api.get("table/z_channel_stream_detail_temp", { params: { limit: 10, filter: "id=" + "'" + i + "'" } })
+                .subscribe(val => {
+                  let data = val['data']
+                  if (data.length == 0) {
+                    self.doPostListLinkAnime(i, title, titlefix, urlori, eps, stream, thumbnail, url)
+                  }
+                  else {
+                    self.doPutListLinkAnime(i, title, titlefix, urlori, eps, stream, thumbnail, url)
+                  }
+                });
+            }
+          }
+        }
+        else if (xhr.status == 404) {
+
+        }
+        else {
+          self.doGetListLinkAnime(i)
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', dataurlapi, true);
+    xhr.send(null);
+  }
+  doPostListLinkAnime(i, title, titlefix, urlori, eps, stream, thumbnail, url) {
+    const headers = new HttpHeaders()
+      .set("Content-Type", "application/json");
+    this.api.post("table/z_channel_stream_detail_temp",
+      {
+        "id": i,
+        "url_ori": urlori,
+        "title_ori": title,
+        "title": titlefix,
+        "episode": eps,
+        "thumbnail": thumbnail,
+        "stream": stream,
+        "url": url,
+        "status": 'OPEN',
+        "datetime": moment().format('YYYY-MM-DD HH:mm')
+      },
+      { headers })
+      .subscribe(val => {
+      }, err => {
+        this.doPostListLinkAnime(i, title, titlefix, urlori, eps, stream, thumbnail, url)
+      });
+  }
+  doPutListLinkAnime(i, title, titlefix, urlori, eps, stream, thumbnail, url) {
+    const headers = new HttpHeaders()
+      .set("Content-Type", "application/json");
+    this.api.put("table/z_channel_stream_detail_temp",
+      {
+        "id": i,
+        "url_ori": urlori,
+        "title_ori": title,
+        "title": titlefix,
+        "episode": eps,
+        "thumbnail": thumbnail,
+        "stream": stream,
+        "url": url,
+        "status": 'OPEN',
+        "datetime": moment().format('YYYY-MM-DD HH:mm')
+      },
+      { headers })
+      .subscribe(val => {
+      }, err => {
+        this.doPutListLinkAnime(i, title, titlefix, urlori, eps, stream, thumbnail, url)
+      });
+  }
+  doGetListAnime() {
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var str = xhr.responseText
+          var count = str.split("https://anoboy.org/20").length - 1
+          let startparam: any;
+          let endparam: any;
+          let starttitle: any;
+          let endtitle: any;
+          console.log(count)
+          for (let i = 1; i <= count; i++) {
+            startparam = str.indexOf('https://anoboy.org/20', startparam + 1)
+            endparam = str.indexOf('" rel="bookmark"', endparam + 1)
+            starttitle = str.indexOf('rel="bookmark" title="', startparam + 1)
+            endtitle = str.indexOf('</a></p>', endparam + 1)
+            var url = str.substring(startparam, endparam)
+            var title = str.substring(starttitle + 22, endtitle)
+            title = title.substring(0, title.indexOf('"'));
+            self.doPostListAnime(url, title)
+          }
+        }
+        else if (xhr.status == 404) {
+
+        }
+        else if (xhr.status == 301) {
+
+        }
+        else {
+          self.doGetListAnime()
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', 'https://anoboy.org/anime-list-sub-indo/', true);
+    xhr.send(null);
+  }
+  doPostListAnime(url, title) {
+    this.api.get("table/z_channel_stream_detail_list", { params: { limit: 1000, filter: "title=" + "'" + title + "'" } })
+      .subscribe(val => {
+        let data = val['data']
+        if (data.length == 0) {
+          const headers = new HttpHeaders()
+            .set("Content-Type", "application/json");
+          this.api.post("table/z_channel_stream_detail_list",
+            {
+              "title": title,
+              "url": url,
+              "status": 'OPEN',
+              "datetime": moment().format('YYYY-MM-DD HH:mm')
+            },
+            { headers })
+            .subscribe(val => {
+            }, err => {
+              this.doPostListAnime(url, title)
+            });
+        }
+      });
+  }
+  doGetListAnimeData() {
+    this.api.get("table/z_channel_stream_detail_list", { params: { limit: 1000, filter: "status='OPEN'" } })
+      .subscribe(val => {
+        let data = val['data']
+        for (let i = 0; i < data.length; i++) {
+          let datalist = data[i]
+          this.doGetListAnimeDataList(datalist)
+        }
+      });
+  }
+  doGetListAnimeDataList(datalist) {
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var str = xhr.responseText
+          var count = str.split('<li><a href="').length - 1
+          var count2 = str.split('</li><').length - 1
+          let startparam: any;
+          let endparam: any;
+          let starttitle: any;
+          let endtitle: any;
+          var title: any;
+          var url: any;
+          for (let i = 1; i <= count; i++) {
+            startparam = str.indexOf('<li><a href="', startparam + 1)
+            endparam = str.indexOf('" title="', endparam + 1)
+            starttitle = str.indexOf('" title="', startparam + 1)
+            endtitle = str.indexOf('</li><', endparam + 1)
+            var endtitle2 = str.indexOf(']</a></li>', endparam + 1)
+            if (i <= count2) {
+              title = str.substring(starttitle + 9, endtitle - 5)
+              url = str.substring(startparam + 13, endparam)
+            }
+            else {
+              title = str.substring(starttitle + 9, endtitle2)
+              url = 'https://anoboy.org' + str.substring(startparam + 13, endparam)
+            }
+            title = title.substring(0, title.indexOf('"'));
+            var titledetail = datalist.title
+            self.doPostListAnimeDetail(titledetail, url, title)
+          }
+        }
+        else if (xhr.status == 404) {
+
+        }
+        else if (xhr.status == 301) {
+
+        }
+        else {
+          self.doGetListAnimeDataList(datalist)
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', datalist.url, true);
+    xhr.send(null);
+  }
+  doPostListAnimeDetail(titledetail, url, title) {
+    this.api.get("table/z_channel_stream_detail_list_detail", { params: { limit: 1000, filter: "title=" + "'" + title + "'" } })
+      .subscribe(val => {
+        let data = val['data']
+        if (data.length == 0) {
+          const headers = new HttpHeaders()
+            .set("Content-Type", "application/json");
+          this.api.post("table/z_channel_stream_detail_list_detail",
+            {
+              "title": title,
+              "title_detail": titledetail,
+              "url": url,
+              "status": 'OPEN',
+              "datetime": moment().format('YYYY-MM-DD HH:mm')
+            },
+            { headers })
+            .subscribe(val => {
+            }, err => {
+              this.doPostListAnimeDetail(titledetail, url, title)
+            });
+        }
+      });
+  }
+  doGetListAnimeDataUrl() {
+    this.api.get("table/z_channel_stream_detail_list_detail", { params: { limit: 5000, filter: "status='OPEN'", sort: 'id ASC' } })
+      .subscribe(val => {
+        let data = val['data']
+        for (let i = 0; i < data.length; i++) {
+          let datalist = data[i]
+          this.doGetListAnimeDataListUrl(datalist)
+        }
+      });
+  }
+  doGetListAnimeDataListUrl(datalist) {
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var str = xhr.responseText
+          var count = str.split('data-video="/uploads').length - 1
+          var epis = str.split('fas fa-play').length - 1
+          var id = datalist.id
+          let startparam: any;
+          let endparam: any;
+          let starttitle: any;
+          let endtitle: any;
+          var title: any;
+          var url: any;
+          if (count != 0) {
+            for (let i = 1; i <= count; i++) {
+              if (epis == 0) {
+                startparam = str.indexOf('data-video="/uploads', startparam + 1)
+                endparam = str.indexOf('" ', startparam + 1)
+                starttitle = str.indexOf('>', startparam + 1)
+                endtitle = str.indexOf('</a>', startparam + 1)
+                url = 'https://anoboy.org' + str.substring(startparam + 12, endparam)
+                title = str.substring(starttitle + 1, endtitle)
+                let titleind = datalist.title
+                let titleinddet = datalist.title_detail
+                self.doPostListAnimeDetailURL(titleind, titleinddet, title, url)
+              }
+              else {
+                startparam = str.indexOf('data-video="/uploads', startparam + 1)
+                endparam = str.indexOf('">', startparam + 1)
+                starttitle = str.indexOf('</i>', startparam + 1)
+                endtitle = str.indexOf('</a>', startparam + 1)
+                url = 'https://anoboy.org' + str.substring(startparam + 12, endparam)
+                title = str.substring(starttitle + 4, endtitle)
+                let titleind = datalist.title
+                let titleinddet = datalist.title_detail
+                self.doPostListAnimeDetailURL(titleind, titleinddet, title, url)
+              }
+            }
+          }
+        }
+        else if (xhr.status == 404) {
+
+        }
+        else if (xhr.status == 301) {
+
+        }
+        else {
+          self.doGetListAnimeDataListUrl(datalist)
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', datalist.url, true);
+    xhr.send(null);
+  }
+  doPostListAnimeDetailURL(titleind, titleinddet, title, url) {
+    this.api.get("table/z_channel_stream_detail_list_detail_url", { params: { limit: 1000, filter: "title_ind_detail=" + "'" + titleinddet + "'" } })
+      .subscribe(val => {
+        let data = val['data']
+        if (data.length == 0) {
+          const headers = new HttpHeaders()
+            .set("Content-Type", "application/json");
+          this.api.post("table/z_channel_stream_detail_list_detail_url",
+            {
+              "title_ind": titleinddet,
+              "title_ind_detail": titleind,
+              "title": title,
+              "url": url,
+              "status": 'OPEN',
+              "datetime": moment().format('YYYY-MM-DD HH:mm')
+            },
+            { headers })
+            .subscribe(val => {
+            }, err => {
+              this.doPostListAnimeDetailURL(titleind, titleinddet, title, url)
+            });
+        }
+      });
+  }
+  doCLSDListAnimeDetail(id) {
+    const headers = new HttpHeaders()
+      .set("Content-Type", "application/json");
+    this.api.put("table/z_channel_stream_detail_list_detail",
+      {
+        "id": id,
+        "status": 'CLSD'
+      },
+      { headers })
+      .subscribe(val => {
+      }, err => {
+        this.doCLSDListAnimeDetail(id)
+      });
+  }
+  doGetCalendar() {
+    this.api.get("table/z_calendar_get", { params: { limit: 1000 } })
+      .subscribe(val => {
+        let data = val['data']
+        var startDate = moment(data[0].datestart, 'YYYY-MM-DD');
+        var endDate = moment(data[0].datefinish, 'YYYY-MM-DD');
+        var diff = endDate.diff(startDate, 'days')
+        let datestart = moment(data[0].datestart).format('YYYY-MM-DD')
+        let datenext: any;
+        for (let i = 0; i < diff; i++) {
+          datenext = moment(datestart, 'YYYY-MM-DD')
+            .add(i, 'day')
+            .format('ddd YYYY-MM-DD');
+          let date = new Date(moment(datenext).format('YYYY-MM-DD'));
+          date.setHours(0, 0, 0, 0);
+          // Thursday in current week decides the year.
+          date.setDate(date.getDate() + 3 - (date.getDay() + 7) % 7);
+          // January 4 is always in week 1.
+          let week1 = new Date(date.getFullYear(), 0, 4);
+          // Adjust to Thursday in week 1 and count number of weeks from date to week1.
+          let batch = (Math.round(((date.getTime() - week1.getTime()) / 86400000
+            - 3 + (week1.getDay() + 7) % 7) / 7) + 1)
+          //let batchno = (date.getFullYear().toString().substr(-2)) //Get Year 2 Digit
+          this.doPostCalendar(datenext, batch)
+        }
+      }, err => {
+        this.doGetCalendar()
+      });
+  }
+  doPostCalendar(datenext, batch) {
+    this.api.get("table/z_calendar", { params: { limit: 1000, filter: 'fulldate=' + "'" + moment(datenext).format('YYYY-MM-DD') + "'" } })
+      .subscribe(val => {
+        let data = val['data']
+        if (data.length == 0) {
+          const headers = new HttpHeaders()
+            .set("Content-Type", "application/json");
+          this.api.post("table/z_calendar",
+            {
+              "fulldate": moment(datenext).format('YYYY-MM-DD'),
+              "day": moment(datenext).format('ddd'),
+              "date": moment(datenext).format('DD'),
+              "month": moment(datenext).format('MM'),
+              "year": moment(datenext).format('YYYY'),
+              "week": batch
+            },
+            { headers })
+            .subscribe(val => {
+            }, err => {
+              this.doPostCalendar(datenext, batch)
+            });
+        }
+      });
+  }
+  doGetJsonProv() {
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var datajson = JSON.parse(xhr.responseText)
+          let data = datajson.aaData
+          for (let i = 0; i < data.length; i++) {
+            let prov = data[i]
+            self.doGetProv(prov)
+          }
+        }
+        else if (xhr.status == 404) {
+
+        }
+        else if (xhr.status == 301) {
+
+        }
+        else {
+          self.doGetJsonProv()
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', 'http://infopemilu.kpu.go.id/pilkada2018/pemilih/dpt/1/listNasional.json', true);
+    xhr.send(null);
+  }
+  doGetProv(prov) {
+    this.api.get("table/z_prov", { params: { limit: 1000, filter: 'prov=' + "'" + prov.namaWilayah + "'" } })
+      .subscribe(val => {
+        let data = val['data']
+        if (data.length == 0) {
+          this.doPostProv(prov)
+        }
+      }, err => {
+        this.doGetProv(prov)
+      });
+  }
+  doPostProv(prov) {
+    const headers = new HttpHeaders()
+      .set("Content-Type", "application/json");
+    this.api.post("table/z_prov",
+      {
+        "prov": prov.namaWilayah,
+        "total_pemilih": prov.totalPemilih,
+        "pemilih_laki": prov.jmlPemilihLaki,
+        "pemilih_perempuan": prov.jmlPemilihPerempuan,
+        "status": 'OPEN'
+      },
+      { headers })
+      .subscribe(val => {
+      }, err => {
+        this.doPostProv(prov)
+      });
+  }
+  doDetail() {
+    this.navCtrl.push('DetailPage')
+  }
+  doGetProvAll() {
+    this.api.get("table/z_prov", { params: { limit: 1000, filter: "status='OPEN'" } })
+      .subscribe(val => {
+        let provinsi = val['data']
+        for (let i = 0; i < provinsi.length; i++) {
+          let prov = provinsi[i]
+          this.doGetJsonKab(prov)
+        }
+
+      }, err => {
+        this.doGetProvAll()
+      });
+  }
+  doGetJsonKab(prov) {
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var datajson = JSON.parse(xhr.responseText)
+          let data = datajson.aaData
+          for (let i = 0; i < data.length; i++) {
+            let kab = data[i]
+            self.doGetKab(kab)
+          }
+        }
+        else if (xhr.status == 404) {
+
+        }
+        else if (xhr.status == 301) {
+
+        }
+        else {
+          self.doGetJsonKab(prov)
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', 'https://infopemilu.kpu.go.id/pilkada2018/pemilih/dpt/1/' + prov.prov + '/listDps.json', true);
+    xhr.send(null);
+  }
+  doGetKab(kab) {
+    this.api.get("table/z_kab", { params: { limit: 1000, filter: 'prov=' + "'" + kab.namaPropinsi + "' AND kab=" + "'" + kab.namaKabKota + "'" } })
+      .subscribe(val => {
+        let data = val['data']
+        if (data.length == 0) {
+          this.doPostKab(kab)
+        }
+      }, err => {
+        this.doGetKab(kab)
+      });
+  }
+  getNextNoUrlKab() {
+    return this.api.get('nextno/z_kab/id')
+  }
+  doPostKab(kab) {
+    this.getNextNoUrlKab().subscribe(val => {
+      let nextnourl = val['nextno'];
+      const headers = new HttpHeaders()
+        .set("Content-Type", "application/json");
+      this.api.post("table/z_kab",
+        {
+          "id": nextnourl,
+          "prov": kab.namaPropinsi,
+          "kab": kab.namaKabKota,
+          "total_pemilih": kab.totalPemilih,
+          "pemilih_laki": kab.jmlPemilihLaki,
+          "pemilih_perempuan": kab.jmlPemilihPerempuan,
+          "status": 'OPEN'
+        },
+        { headers })
+        .subscribe(val => {
+        }, err => {
+          this.doPostKab(kab)
+        });
+    });
+  }
+  doGetLoopKab() {
+    this.api.get("table/z_scan_loop", { params: { limit: 1000, filter: "name='KAB'" } })
+      .subscribe(val => {
+        let data = val['data'][0]
+        this.doGetKabAll(data)
+      });
+  }
+  doGetKabAll(data) {
+    this.api.get("table/z_kab", { params: { limit: 1000, filter: "id >=" + "'" + data.start_scan + "' AND id <=" + "'" + data.finish_scan + "' AND status='OPEN'" } })
+      .subscribe(val => {
+        let kabupaten = val['data']
+        for (let i = 0; i < kabupaten.length; i++) {
+          let kab = kabupaten[i]
+          this.doGetJsonKec(kab)
+        }
+
+      }, err => {
+        this.doGetKabAll(data)
+      });
+  }
+  doGetJsonKec(kab) {
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var datajson = JSON.parse(xhr.responseText)
+          let data = datajson.aaData
+          for (let i = 0; i < data.length; i++) {
+            let kec = data[i]
+            self.doGetKec(kec)
+          }
+        }
+        else if (xhr.status == 404) {
+
+        }
+        else if (xhr.status == 301) {
+
+        }
+        else if (xhr.status == 500) {
+
+        }
+        else {
+          self.doGetJsonKec(kab)
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', 'https://infopemilu.kpu.go.id/pilkada2018/pemilih/dpt/1/' + kab.prov + '/' + kab.kab + '/listDps.json', true);
+    xhr.send(null);
+  }
+  doGetKec(kec) {
+    this.api.get("table/z_kec", { params: { limit: 1000, filter: 'prov=' + "'" + kec.namaPropinsi + "' AND kab=" + "'" + kec.namaKabKota + "' AND kec=" + "'" + kec.namaKecamatan + "'" } })
+      .subscribe(val => {
+        let data = val['data']
+        if (data.length == 0) {
+          this.doPostKec(kec)
+        }
+      }, err => {
+        this.doGetKec(kec)
+      });
+  }
+  getNextNoUrlKec() {
+    return this.api.get('nextno/z_kec/id')
+  }
+  doPostKec(kec) {
+    this.getNextNoUrlKec().subscribe(val => {
+      let nextnourl = val['nextno'];
+      const headers = new HttpHeaders()
+        .set("Content-Type", "application/json");
+      this.api.post("table/z_kec",
+        {
+          "id": nextnourl,
+          "prov": kec.namaPropinsi,
+          "kab": kec.namaKabKota,
+          "kec": kec.namaKecamatan,
+          "total_pemilih": kec.totalPemilih,
+          "pemilih_laki": kec.jmlPemilihLaki,
+          "pemilih_perempuan": kec.jmlPemilihPerempuan,
+          "status": 'OPEN'
+        },
+        { headers })
+        .subscribe(val => {
+        }, err => {
+          this.doPostKec(kec)
+        });
+    });
+  }
+  doGetLoopKec() {
+    this.api.get("table/z_scan_loop", { params: { limit: 1000, filter: "name='KEC'" } })
+      .subscribe(val => {
+        let data = val['data'][0]
+        this.doGetKecAll(data)
+      });
+  }
+  doGetKecAll(data) {
+    this.api.get("table/z_kec", { params: { limit: 1000, filter: "id >=" + "'" + data.start_scan + "' AND id <=" + "'" + data.finish_scan + "' AND status='OPEN'" } })
+      .subscribe(val => {
+        let kecamatan = val['data']
+        for (let i = 0; i < kecamatan.length; i++) {
+          let kec = kecamatan[i]
+          this.doGetJsonKel(kec)
+        }
+
+      }, err => {
+        this.doGetKecAll(data)
+      });
+  }
+  doGetJsonKel(kec) {
+    var self = this
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        if (xhr.status == 200) {
+          var datajson = JSON.parse(xhr.responseText)
+          let data = datajson.aaData
+          for (let i = 0; i < data.length; i++) {
+            let kel = data[i]
+            self.doPostKel(kel)
+          }
+        }
+        else if (xhr.status == 404) {
+
+        }
+        else if (xhr.status == 301) {
+
+        }
+        else if (xhr.status == 500) {
+
+        }
+        else {
+          self.doGetJsonKel(kec)
+        }
+      }
+    }
+    xhr.onerror = function () {
+
+    };
+    xhr.open('GET', 'https://infopemilu.kpu.go.id/pilkada2018/pemilih/dpt/1/' + kec.prov + '/' + kec.kab + '/' + kec.kec + '/listDps.json', true);
+    xhr.send(null);
+  }
+  doGetKel(kel) {
+    this.api.get("table/z_kel", { params: { limit: 1000, filter: 'prov=' + "'" + kel.namaPropinsi + "' AND kab=" + "'" + kel.namaKabKota + "' AND kec=" + "'" + kel.namaKecamatan + "' AND kel=" + "'" + kel.namaKelurahan + "'" } })
+      .subscribe(val => {
+        let data = val['data']
+        if (data.length == 0) {
+          this.doPostKel(kel)
+        }
+      }, err => {
+        this.doGetKel(kel)
+      });
+  }
+  doPostKel(kel) {
+    const headers = new HttpHeaders()
+      .set("Content-Type", "application/json");
+    this.api.post("table/z_kel",
+      {
+        "prov": kel.namaPropinsi,
+        "kab": kel.namaKabKota,
+        "kec": kel.namaKecamatan,
+        "kel": kel.namaKelurahan,
+        "total_pemilih": kel.totalPemilih,
+        "pemilih_laki": kel.jmlPemilihLaki,
+        "pemilih_perempuan": kel.jmlPemilihPerempuan,
+        "status": 'OPEN'
+      },
+      { headers })
+      .subscribe(val => {
+      }, err => {
+        this.doPostKel(kel)
       });
   }
 }
